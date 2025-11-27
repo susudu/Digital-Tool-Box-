@@ -128,6 +128,8 @@ HTML_CONTENT = """
   <meta charset="utf-8"/>
   <title>Digital Toolbox Upload</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/basiclightbox@5.0.4/dist/basicLightbox.min.js"></script>
   <style>
     body{font-family:Inter,Arial; background:#f7fafc; padding:24px;}
     .card{max-width:960px;margin:20px auto;background:white;border-radius:10px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.08);}
@@ -141,7 +143,7 @@ HTML_CONTENT = """
     @keyframes spin{to{transform:rotate(360deg)}}
     .plots{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
     .plot{width:calc(50% - 6px);min-width:220px;background:#fff;border:1px solid #edf2f7;padding:8px;border-radius:8px;text-align:center}
-    .preview{font-size:13px;color:#475569;margin-top:10px}
+    .preview{font-size:13px;color:#475569;margin-top:10px;white-space:pre; font-family:monospace;}
     .history{margin-top:18px}
     .history-item{border-top:1px solid #edf2f7;padding:10px 0}
     .small{font-size:13px;color:#718096}
@@ -183,18 +185,24 @@ const historyDiv = document.getElementById('history');
 pickBtn.addEventListener('click', ()=> fileInput.click());
 
 ['dragenter','dragover'].forEach(evt=>{
-  uploadArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener(evt, e=>{
+    e.preventDefault(); e.stopPropagation();
+    uploadArea.classList.add('dragover');
+  });
 });
 ['dragleave','drop'].forEach(evt=>{
-  uploadArea.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); });
+  uploadArea.addEventListener(evt, e=>{
+    e.preventDefault(); e.stopPropagation();
+    uploadArea.classList.remove('dragover');
+  });
 });
 
-uploadArea.addEventListener('drop', async (e)=>{
+uploadArea.addEventListener('drop', async e=>{
   const file = e.dataTransfer.files[0];
   if(file) uploadFile(file);
 });
 
-fileInput.addEventListener('change', (e)=> {
+fileInput.addEventListener('change', e=>{
   const file = e.target.files[0];
   if(file) uploadFile(file);
 });
@@ -215,8 +223,7 @@ async function uploadFile(file){
   const j = await res.json();
   const id = j.file_id;
 
-  // poll status endpoint until status = done or timeout
-  const maxTries = 60; // 60 * 2s = 2 minutes
+  const maxTries = 60; 
   let tries = 0;
   const poll = setInterval(async ()=>{
     tries += 1;
@@ -224,9 +231,12 @@ async function uploadFile(file){
     if(sres.status===404){ msg.textContent='Status not found'; clearInterval(poll); spinner.style.display='none'; return; }
     const info = await sres.json();
     msg.textContent = `Status: ${info.status}`;
+
+    // Preview first few rows of Excel (if available)
     if(info.preview_html){
-      preview.innerHTML = info.preview_html; // small HTML preview (safe)
+      preview.innerHTML = info.preview_html;
     }
+
     if(info.status === 'done' || info.status === 'error'){
       clearInterval(poll);
       spinner.style.display = 'none';
@@ -237,6 +247,11 @@ async function uploadFile(file){
           img.src = `/result/${id}/${p}`;
           img.style.maxWidth = '100%';
           img.style.height = 'auto';
+          img.style.cursor = 'pointer';
+          img.addEventListener('click', ()=>{
+            basicLightbox.create(`<img src="${img.src}" style="width:100%;height:auto;">`).show();
+          });
+
           const wrap = document.createElement('div');
           wrap.className = 'plot';
           const caption = document.createElement('div');
@@ -251,11 +266,7 @@ async function uploadFile(file){
       } else {
         msg.textContent = 'No plots found.';
       }
-      // Refresh history
       loadHistory();
-    } else {
-      // still processing
-      // optional: add rotating dots
     }
     if(tries > maxTries){
       clearInterval(poll);
@@ -265,7 +276,6 @@ async function uploadFile(file){
   }, 2000);
 }
 
-// simple history loader
 async function loadHistory(){
   const res = await fetch('/history');
   if(!res.ok) return;
