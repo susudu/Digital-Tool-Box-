@@ -185,41 +185,41 @@ def main():
         print("Error reading file:", e)
         return
       
-     # =====================================================
-     # CONFIGURATION
-     # =====================================================
-     TITLE = "East Region – Pleasantness vs Eventfulness"
+    # =====================================================
+    # CONFIGURATION
+    # =====================================================
+    TITLE = "East Region – Pleasantness vs Eventfulness"
     
-     # =====================================================
-     # LOAD DATA
-     # =====================================================
-     df_areas = df.set_index("scene").T
-     locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
+    # =====================================================
+    # LOAD DATA
+    # =====================================================
+    df_areas = df.set_index("scene").T
+    locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
     
-     # Compute raw values
-     P_raw, E_raw = compute_P_E(locations)
+    # Compute raw values
+    P_raw, E_raw = compute_P_E(locations)
     
-     # Apply fixed normalization
-     P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
-     E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
+    # Apply fixed normalization
+    P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
+    E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
     
-     # =====================================================
-     # SCENE STYLE & LABEL DEFINITIONS
-     # =====================================================
+    # =====================================================
+    # SCENE STYLE & LABEL DEFINITIONS
+    # =====================================================
 
-     SCENE_STYLES = {
-         'SW-E1-0': {'color': '#5da5c3', 'marker': 'o'},
-         'SW-E1-1': {'color': '#3b5b92', 'marker': 'o'},
-         'VR-E1-0v': {'color': '#9dcf75', 'marker': 'o'},
-         'VR-E1-1v': {'color': '#66a61e', 'marker': 'o'},
-         'VR-E1-0a': {'color': '#f6b686', 'marker': 'o'},
-         'VR-E1-1a': {'color': '#e6ab02', 'marker': 'o'},
-         'SW-E2-0': {'color': '#5da5c3', 'marker': 'X'},
-         'SW-E2-1': {'color': '#3b5b92', 'marker': 'X'},
-         'VR-E2-0v': {'color': '#9dcf75', 'marker': 'X'},
-         'VR-E2-1v': {'color': '#66a61e', 'marker': 'X'},
-         'VR-E2-0a': {'color': '#f6b686', 'marker': 'X'},
-         'VR-E2-1a': {'color': '#e6ab02', 'marker': 'X'},
+    SCENE_STYLES = {
+        'SW-E1-0': {'color': '#5da5c3', 'marker': 'o'},
+        'SW-E1-1': {'color': '#3b5b92', 'marker': 'o'},
+        'VR-E1-0v': {'color': '#9dcf75', 'marker': 'o'},
+        'VR-E1-1v': {'color': '#66a61e', 'marker': 'o'},
+        'VR-E1-0a': {'color': '#f6b686', 'marker': 'o'},
+        'VR-E1-1a': {'color': '#e6ab02', 'marker': 'o'},
+        'SW-E2-0': {'color': '#5da5c3', 'marker': 'X'},
+        'SW-E2-1': {'color': '#3b5b92', 'marker': 'X'},
+        'VR-E2-0v': {'color': '#9dcf75', 'marker': 'X'},
+        'VR-E2-1v': {'color': '#66a61e', 'marker': 'X'},
+        'VR-E2-0a': {'color': '#f6b686', 'marker': 'X'},
+        'VR-E2-1a': {'color': '#e6ab02', 'marker': 'X'},
     }
     
     SCENE_LABELS = {
