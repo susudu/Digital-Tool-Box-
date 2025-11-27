@@ -100,9 +100,9 @@ def status(file_id: str):
     return JSONResponse(meta[file_id])
 
 # Serve a specific plot (PNG) or other result files
-@app.get("/result/{file_id}/{filename}")
+@app.get("/result/{file_id}")
 def get_result(file_id: str, filename: str):
-    path = RESULT_DIR / f"{file_id}_{filename}"
+    path = RESULT_DIR / f"{file_id}.png"
     if not path.exists():
         return JSONResponse({"error": "not found"}, status_code=404)
     return FileResponse(path, media_type="image/png")
