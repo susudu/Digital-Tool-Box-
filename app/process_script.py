@@ -105,7 +105,7 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
                    edgecolor='black', linewidth=0.6, zorder=3)
 
     # Connect points if needed
-    if TITLE == "VR Region View ~ Away – Pleasantness vs Eventfulness":
+    if TITLE == "VR Group: View - Away":
         coordinates_dict = {scene: (P_values[i], E_values[i]) for i, scene in enumerate(scene_list)}
         pairs_to_connect = [
             ('VR-E1-0v', 'VR-E1-0a'), ('VR-E1-1v', 'VR-E1-1a'),
@@ -188,7 +188,7 @@ def main():
     # =====================================================
     # CONFIGURATION
     # =====================================================
-    TITLE = "East Region – Pleasantness vs Eventfulness"
+    TITLE = "East Side – SW and VR Groups: Façade Effect"
     
     # =====================================================
     # LOAD DATA
