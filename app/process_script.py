@@ -240,7 +240,15 @@ def main():
     plots = []
     preview_html = ""
 
-    # === EXAMPLE PLOT 1 ===
+    # === EXCEL DATA PREVIEW ===
+    try:
+        preview_df = df.head(10)   # first 10 rows
+        preview_html += "<h3>Data Preview</h3>"
+        preview_html += preview_df.to_html(border=1)
+    except Exception as e:
+        print("data preview error:", e)
+
+    # === Generate PLOT 1 ===
     try:
       fig = show_normalized_scene_plot(TITLE,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
       f1 = f"{file_id}_plot1.png"
@@ -249,7 +257,7 @@ def main():
       fig.savefig(out1, bbox_inches="tight", dpi=200)
       plt.close(fig)
       plots.append(f1)
-      preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
+      #preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
     except Exception as e:
       print("plot1 error", e)
 
