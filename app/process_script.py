@@ -135,15 +135,14 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
     ax.axvline(0, color='black', linewidth=1.5, alpha=0.4, zorder=2)
 
     # Quadrant labels
-    ax.text(-0.56, 0.56, 'Chaotic', color='gray', fontsize=9, ha='center', va='center', fontweight='bold')
-    ax.text(0.56, 0.56, 'Vibrant', color='gray', fontsize=9, ha='center', va='center', fontweight='bold')
-    ax.text(-0.56, -0.56, 'Monotonous', color='gray', fontsize=9, ha='center', va='center', fontweight='bold')
-    ax.text(0.56, -0.56, 'Calm', color='gray', fontsize=9, ha='center', va='center', fontweight='bold')
+    ax.text(-0.56, 0.56, '(Chaotic)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
+    ax.text(0.56, 0.56, '(Vibrant)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
+    ax.text(-0.56, -0.56, '(Monotonous)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
+    ax.text(0.56, -0.56, '(Calm)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
 
     ax.set_title("Fixed-Max Normalized (−1 to 1)", fontsize=10, fontweight='bold')
-    ax.set_xlabel("Pleasantness (P)", fontsize=9)
-    ax.set_ylabel("Eventfulness (E)", fontsize=9)
-
+    ax.set_xlabel("ISOPleasant", fontsize=9)
+    ax.set_ylabel("ISOEventful", fontsize=9)
 
 def show_normalized_scene_plot(TITLE, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS):
     # Bigger figure for Streamlit
