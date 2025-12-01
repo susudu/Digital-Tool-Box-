@@ -104,24 +104,24 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
                    s=45, alpha=0.8,
                    edgecolor='black', linewidth=0.6, zorder=3)
 
-    # Connect points if needed
-    if TITLE == "VR Group: View - Away":
-        coordinates_dict = {scene: (P_values[i], E_values[i]) for i, scene in enumerate(scene_list)}
-        pairs_to_connect = [
-            ('VR-E1-0v', 'VR-E1-0a'), ('VR-E1-1v', 'VR-E1-1a'),
-            ('VR-E2-0v', 'VR-E2-0a'), ('VR-E2-1v', 'VR-E2-1a'),
-            ('VR-W1-0v', 'VR-W1-0a'), ('VR-W1-1v', 'VR-W1-1a'),
-            ('VR-W2-0v', 'VR-W2-0a'), ('VR-W2-1v', 'VR-W2-1a'),
-        ]
-        for loc1, loc2 in pairs_to_connect:
-            if loc1 in coordinates_dict and loc2 in coordinates_dict:
-                P1, E1 = coordinates_dict[loc1]
-                P2, E2 = coordinates_dict[loc2]
-                ax.plot([P1, P2], [E1, E2], color='gray', linestyle='-', linewidth=0.8, alpha=0.5, zorder=2)
-    else:
-        for i in range(0, len(P_values)-1, 2):
-            ax.plot([P_values[i], P_values[i+1]], [E_values[i], E_values[i+1]],
-                    linestyle='-', color='gray', linewidth=0.8, alpha=0.5, zorder=2)
+    # # Connect points if needed
+    # if TITLE == "VR Group: View - Away":
+    #     coordinates_dict = {scene: (P_values[i], E_values[i]) for i, scene in enumerate(scene_list)}
+    #     pairs_to_connect = [
+    #         ('VR-E1-0v', 'VR-E1-0a'), ('VR-E1-1v', 'VR-E1-1a'),
+    #         ('VR-E2-0v', 'VR-E2-0a'), ('VR-E2-1v', 'VR-E2-1a'),
+    #         ('VR-W1-0v', 'VR-W1-0a'), ('VR-W1-1v', 'VR-W1-1a'),
+    #         ('VR-W2-0v', 'VR-W2-0a'), ('VR-W2-1v', 'VR-W2-1a'),
+    #     ]
+    #     for loc1, loc2 in pairs_to_connect:
+    #         if loc1 in coordinates_dict and loc2 in coordinates_dict:
+    #             P1, E1 = coordinates_dict[loc1]
+    #             P2, E2 = coordinates_dict[loc2]
+    #             ax.plot([P1, P2], [E1, E2], color='gray', linestyle='-', linewidth=0.8, alpha=0.5, zorder=2)
+    # else:
+    #     for i in range(0, len(P_values)-1, 2):
+    #         ax.plot([P_values[i], P_values[i+1]], [E_values[i], E_values[i+1]],
+    #                 linestyle='-', color='gray', linewidth=0.8, alpha=0.5, zorder=2)
 
     # Axes & grid
     ax.set_xlim(-1.05, 1.05)
