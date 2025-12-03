@@ -339,7 +339,7 @@ HTML_CONTENT = """
 <body>
   <div class="container">
     <div class="card">
-      <h1>Digital Toolbox — Multi-file Upload (collapsible per file)</h1>
+      <h1>Digital Toolbox — Multi-file Upload </h1>
       <div class="upload-area" id="uploader">
         <p>Drag & drop one or multiple Excel files (.xlsx) here, or</p>
         <button id="pickBtn" class="btn">Choose files</button>
