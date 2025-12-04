@@ -38,6 +38,29 @@ def update_meta(file_id, **kwargs):
     meta[file_id].update(kwargs)
     write_meta(meta)
 
+def data_preprocessing(df):    
+    # clean the ID column in-place
+    df['ID'] = df['ID'].str.replace(r'Assessment \d+', 'Assessment ', regex=True)
+
+    # rename the cleaned column
+    df = df.rename(columns={'ID': 'scene'})
+    
+    # convert category → category codes
+    df["Category"] = df["Category"].astype("category")
+    df["category_code"] = df["Category"].cat.codes
+
+    # combine scene + category_code
+    df["scene"] = df["scene"].astype(str) + "_" + df["category_code"].astype(str)
+
+    # Remove category columns 
+    df = df.drop(columns=["Category", "category_code"])
+
+    # set scene as index and transpose
+    df_pivot = df.set_index("scene").T
+    df_pivot = df_pivot.rename_axis("scene").reset_index()
+
+    return df_pivot
+
 # =====================================================
 # CORE COMPUTATION
 # =====================================================
@@ -179,6 +202,7 @@ def main():
 
     try:
         df = pd.read_excel(file_path)
+        df = data_preprocessing(df)
     except Exception as e:
         update_meta(file_id, status="error")
         print("Error reading file:", e)
