@@ -60,7 +60,18 @@ def data_preprocessing(df):
     df_pivot = df.set_index("scene").T
     df_pivot = df_pivot.rename_axis("scene").reset_index()
 
-    return df_pivot
+    return df_pivot, category_map
+
+def restore_category_from_scene(scene, category_map):
+    # last "_" part is category code
+    if "_" not in scene:
+        return scene
+
+    base, code_str = scene.rsplit("_", 1)
+    code = int(code_str)
+    cat_name = category_map.get(code, "unknown")
+
+    return f"{base}-{cat_name}"
 
 # =====================================================
 # CORE COMPUTATION
@@ -203,7 +214,7 @@ def main():
 
     try:
         df = pd.read_excel(file_path)
-        df = data_preprocessing(df)
+        df,category_map = data_preprocessing(df)
     except Exception as e:
         update_meta(file_id, status="error")
         print("Error reading file:", e)
@@ -226,11 +237,11 @@ def main():
     # Apply fixed normalization
     P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
     E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
-    
+
+    df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
     # =====================================================
     # SCENE STYLE & LABEL DEFINITIONS
     # =====================================================
-
     SCENE_STYLES = {
         'SW-E1-0': {'color': '#5da5c3', 'marker': 'o'},
         'SW-E1-1': {'color': '#3b5b92', 'marker': 'o'},
