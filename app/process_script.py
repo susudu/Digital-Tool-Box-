@@ -48,6 +48,7 @@ def data_preprocessing(df):
     # convert category → category codes
     df["Category"] = df["Category"].astype("category")
     df["category_code"] = df["Category"].cat.codes
+    category_map = dict(enumerate(df["Category"].cat.categories))
 
     # combine scene + category_code
     df["scene"] = df["scene"].astype(str) + "_" + df["category_code"].astype(str)
@@ -211,7 +212,7 @@ def main():
     # =====================================================
     # CONFIGURATION
     # =====================================================
-    TITLE = "East Side – SW and VR Groups: Façade Effect"
+    TITLE = "Test All Scatter Plots"
     
     # =====================================================
     # LOAD DATA
