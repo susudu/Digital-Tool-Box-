@@ -38,9 +38,7 @@ def update_meta(file_id, **kwargs):
     meta[file_id].update(kwargs)
     write_meta(meta)
 
-def data_preprocessing(excel_path):
-    df = pd.read_excel(excel_path)
-    
+def data_preprocessing(df):
     # clean the ID column in-place
     df['ID'] = df['ID'].str.replace(r'Assessment \d+', 'Assessment ', regex=True)
 
@@ -227,7 +225,7 @@ def main():
     # LOAD DATA
     # =====================================================
         df = pd.read_excel(file_path)
-        df,category_map = data_preprocessing(excel_path)
+        df,category_map = data_preprocessing(df)
         #print(df)
         df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
         df_areas = df.set_index("scene").T
