@@ -38,14 +38,16 @@ def update_meta(file_id, **kwargs):
     meta[file_id].update(kwargs)
     write_meta(meta)
 
-def data_preprocessing(df):    
+def data_preprocessing(excel_path):
+    df = pd.read_excel(excel_path)
+    
     # clean the ID column in-place
     df['ID'] = df['ID'].str.replace(r'Assessment \d+', 'Assessment ', regex=True)
 
     # rename the cleaned column
     df = df.rename(columns={'ID': 'scene'})
     
-    # convert category → category codes
+    # convert category , category codes
     df["Category"] = df["Category"].astype("category")
     df["category_code"] = df["Category"].cat.codes
     category_map = dict(enumerate(df["Category"].cat.categories))
@@ -53,13 +55,21 @@ def data_preprocessing(df):
     # combine scene + category_code
     df["scene"] = df["scene"].astype(str) + "_" + df["category_code"].astype(str)
 
-    # Remove category columns 
+    # remove category columns 
     df = df.drop(columns=["Category", "category_code"])
 
     # set scene as index and transpose
     df_pivot = df.set_index("scene").T
     df_pivot = df_pivot.rename_axis("scene").reset_index()
-
+ 
+    # arrange the rows according to the order used in calculate_coordinates,compute_P_E functions
+    desired_order = ["eventful", "vibrant", "pleasant", "calm", "uneventful", "monotonous", "annoying", "chaotic"]
+    order_col = "scene"
+    df_pivot[order_col] = pd.Categorical(df_pivot[order_col], categories=desired_order, ordered=True)
+    df_pivot = df_pivot.sort_values(order_col).set_index(order_col)
+    
+    # after transpose, index rename to "scene"
+    df_pivot = df_pivot.rename_axis("scene").reset_index()
     return df_pivot, category_map
 
 def restore_category_from_scene(scene, category_map):
@@ -213,8 +223,15 @@ def main():
     file_id = sys.argv[2]
 
     try:
+    # =====================================================
+    # LOAD DATA
+    # =====================================================
         df = pd.read_excel(file_path)
-        df,category_map = data_preprocessing(df)
+        df,category_map = data_preprocessing(excel_path)
+        #print(df)
+        df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
+        df_areas = df.set_index("scene").T
+        locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
     except Exception as e:
         update_meta(file_id, status="error")
         print("Error reading file:", e)
@@ -225,12 +242,6 @@ def main():
     # =====================================================
     TITLE = "Test All Scatter Plots"
     
-    # =====================================================
-    # LOAD DATA
-    # =====================================================
-    df_areas = df.set_index("scene").T
-    locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
-    
     # Compute raw values
     P_raw, E_raw = compute_P_E(locations)
     
@@ -238,39 +249,34 @@ def main():
     P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
     E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
 
-    df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
     # =====================================================
     # SCENE STYLE & LABEL DEFINITIONS
     # =====================================================
-    SCENE_STYLES = {
-        'SW-E1-0': {'color': '#5da5c3', 'marker': 'o'},
-        'SW-E1-1': {'color': '#3b5b92', 'marker': 'o'},
-        'VR-E1-0v': {'color': '#9dcf75', 'marker': 'o'},
-        'VR-E1-1v': {'color': '#66a61e', 'marker': 'o'},
-        'VR-E1-0a': {'color': '#f6b686', 'marker': 'o'},
-        'VR-E1-1a': {'color': '#e6ab02', 'marker': 'o'},
-        'SW-E2-0': {'color': '#5da5c3', 'marker': 'X'},
-        'SW-E2-1': {'color': '#3b5b92', 'marker': 'X'},
-        'VR-E2-0v': {'color': '#9dcf75', 'marker': 'X'},
-        'VR-E2-1v': {'color': '#66a61e', 'marker': 'X'},
-        'VR-E2-0a': {'color': '#f6b686', 'marker': 'X'},
-        'VR-E2-1a': {'color': '#e6ab02', 'marker': 'X'},
-    }
+    COLORS = [
+    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', 
+    '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', 
+    '#bcbd22', '#17becf']
+    MARKERS = ['o', 'X', 's', 'D', '^', 'v', '<', '>', 'P', '*']
     
-    SCENE_LABELS = {
-         'SW-E1-0':  'SW – façade still | noiseless',
-         'SW-E1-1':  'SW – façade still | noise',
-         'VR-E1-0v': 'VR – façade still | noiseless-view',
-         'VR-E1-1v': 'VR – façade still | noise-view',
-         'VR-E1-0a': 'VR – façade still | noiseless-away',
-         'VR-E1-1a': 'VR – façade still | noise-away',
-         'SW-E2-0':  'SW – façade move | noiseless',
-         'SW-E2-1':  'SW – façade move | noise',
-         'VR-E2-0v': 'VR – façade move | noiseless-view',
-         'VR-E2-1v': 'VR – façade move | noise-view',
-         'VR-E2-0a': 'VR – façade move | noiseless-away',
-         'VR-E2-1a': 'VR – façade move | noise-away',
-    } 
+    def build_scene_styles(scene_labels):
+        styles = {}
+        for i, label in enumerate(scene_labels):
+            styles[label] = {
+                "color": COLORS[i % len(COLORS)],
+                "marker": MARKERS[i % len(MARKERS)]
+            }
+        return styles
+        
+    def build_scene_labels(columns):
+        labels = {}
+        for col in columns:
+        # readable label replace "-" with " | " 
+            human = col.replace("-", " | ")
+            labels[col] = human
+        return labels
+    
+    SCENE_LABELS = build_scene_labels(df.columns)
+    SCENE_STYLES = build_scene_styles(SCENE_LABELS.keys())
 
     plots = []
     preview_html = ""
