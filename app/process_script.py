@@ -11,7 +11,7 @@ from soundscapy.plotting import density_plot
 import soundscapy.surveys as surveys
 import seaborn as sns
 import re
-from main import paired_connectors_enabled
+#from main import paired_connectors_enabled
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
