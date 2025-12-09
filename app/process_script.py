@@ -268,7 +268,7 @@ def scene_distrib_plot(df_row,TITLE_DS):
 
     # Create a figure and axis
     fig, ax = plt.subplots(figsize=(6,6))
-    plt.suptitle(TITLE_SC, fontsize=12, fontweight='bold', y=0.95)
+    plt.suptitle(TITLE_DS, fontsize=12, fontweight='bold', y=0.95)
 
     # --- Plot the points---
     density_plot(
@@ -302,7 +302,7 @@ def scene_distrib_plot(df_row,TITLE_DS):
     )
 
     # Add space on the right so the legend fits
-    fig.subplots_adjust(right=0.7)
+    fig.subplots_adjust(right=0.78)
 
     #ax.legend(ordered_handles,ordered_labels, loc="lower left", fontsize=8)
     #plt.tight_layout()
