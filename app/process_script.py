@@ -266,8 +266,12 @@ def scene_distrib_plot(df_row,TITLE_DS):
         for i, cond in enumerate(unique_conditions)
     }
 
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(6,6))
+    plt.suptitle(TITLE_SC, fontsize=12, fontweight='bold', y=0.95)
+
     # --- Plot the points---
-    ax = density_plot(
+    density_plot(
         valid_data,
         title=TITLE_DS,
         hue="Condition",
@@ -275,11 +279,13 @@ def scene_distrib_plot(df_row,TITLE_DS):
         incl_scatter=True,
         diagonal_lines=True,
         fill=True,
-        palette=palette
+        palette=palette,
+        ax=ax
     )
     
-    # --- Get figure from axis ---
-    fig = ax.get_figure()
+    # Remove automatic axis legend to avoid duplicate
+    if ax.get_legend() is not None:
+        ax.get_legend().remove()
     
     # --- FIX LEGEND ORDER OUTSIDE ---
     handles, labels = ax.get_legend_handles_labels() 
