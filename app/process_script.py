@@ -278,6 +278,9 @@ def scene_distrib_plot(df_row,TITLE_DS):
         palette=palette
     )
     
+    # --- Get figure from axis ---
+    fig = ax.get_figure()
+    
     # --- FIX LEGEND ORDER OUTSIDE ---
     handles, labels = ax.get_legend_handles_labels() 
     ordered_handles = [handles[labels.index(c)] for c in unique_conditions]
@@ -301,7 +304,7 @@ def scene_distrib_plot(df_row,TITLE_DS):
     #ax.legend(ordered_handles,ordered_labels, loc="lower left", fontsize=8)
     #plt.tight_layout()
 
-    return ax.get_figure()
+    return fig
 
 def main():
     if len(sys.argv) < 3:
