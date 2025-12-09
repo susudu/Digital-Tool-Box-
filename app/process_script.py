@@ -266,7 +266,7 @@ def scene_distrib_plot(df_row,TITLE_DS):
         for i, cond in enumerate(unique_conditions)
     }
 
-    # --- Plot ---
+    # --- Plot the points---
     ax = density_plot(
         valid_data,
         title=TITLE_DS,
@@ -278,13 +278,28 @@ def scene_distrib_plot(df_row,TITLE_DS):
         palette=palette
     )
     
-    # --- FIX LEGEND ORDER ---
+    # --- FIX LEGEND ORDER OUTSIDE ---
     handles, labels = ax.get_legend_handles_labels() 
     ordered_handles = [handles[labels.index(c)] for c in unique_conditions]
     ordered_labels = unique_conditions
-    
-    ax.legend(ordered_handles,ordered_labels, loc="lower left", fontsize=8)
-    plt.tight_layout()
+
+    # ----- LEGEND OUTSIDE -----
+    handles, labels = ax.get_legend_handles_labels()
+
+    fig.legend(
+        ordered_handles, ordered_labels,
+        title="Conditions",
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1),   # moves legend outside
+        borderaxespad=0,
+        fontsize=8,
+    )
+
+    # Add space on the right so the legend fits
+    fig.subplots_adjust(right=0.78)
+
+    #ax.legend(ordered_handles,ordered_labels, loc="lower left", fontsize=8)
+    #plt.tight_layout()
 
     return ax.get_figure()
 
