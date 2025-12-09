@@ -45,16 +45,23 @@ def data_preprocessing(df):
     # rename the cleaned column
     df = df.rename(columns={'ID': 'scene'})
     
-    # convert category , category codes
-    df["Category"] = df["Category"].astype("category")
-    df["category_code"] = df["Category"].cat.codes
-    category_map = dict(enumerate(df["Category"].cat.categories))
+    # automatically select columns that match the regex
+    pattern = r"^Category"   # <-- change this to your regex
+    category_cols = [col for col in df.columns if re.search(pattern, col)]
 
-    # combine scene + category_code
-    df["scene"] = df["scene"].astype(str) + "_" + df["category_code"].astype(str)
+    category_maps = {}
 
-    # remove category columns 
-    df = df.drop(columns=["Category", "category_code"])
+    for col in category_cols:
+        df[col] = df[col].astype("category")
+        df[col + "_code"] = df[col].cat.codes
+        category_maps[col] = dict(enumerate(df[col].cat.categories))
+
+    # combine scene + all category_codes
+    code_cols = [col + "_code" for col in category_cols]
+    df["scene"] = df["scene"].astype(str) + "_" + df[code_cols].astype(str).agg("_".join, axis=1)
+
+    # remove original category columns + code columns
+    df = df.drop(columns=category_cols + code_cols)
 
     # set scene as index and transpose
     df_pivot = df.set_index("scene").T
@@ -68,18 +75,30 @@ def data_preprocessing(df):
     
     # after transpose, index rename to "scene"
     df_pivot = df_pivot.rename_axis("scene").reset_index()
-    return df_pivot, category_map
+    return df_pivot, category_maps
 
-def restore_category_from_scene(scene, category_map):
-    # last "_" part is category code
-    if "_" not in scene:
-        return scene
+def restore_category_from_scene(scene, category_maps):
+    parts = scene.split("_")
 
-    base, code_str = scene.rsplit("_", 1)
-    code = int(code_str)
-    cat_name = category_map.get(code, "unknown")
+    if len(parts) < 2:
+        return scene  # nothing to restore
 
-    return f"{base}-{cat_name}"
+    base = parts[0]
+    code_strings = parts[1:]  # all numeric category codes
+
+    decoded_values = []
+
+    # Decode each category code
+    for (_, cat_map), code_str in zip(category_maps.items(), code_strings):
+        code = int(code_str)
+        decoded_values.append(cat_map.get(code, "unknown"))
+
+    # Combine category values with +
+    cat_combined = "+".join(decoded_values)
+    print(type(cat_combined))
+
+    restored = f"{base}_{cat_combined}"
+    return restored
 
 # =====================================================
 # CORE COMPUTATION
@@ -187,7 +206,7 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
     ax.set_xlabel("ISOPleasant", fontsize=9)
     ax.set_ylabel("ISOEventful", fontsize=9)
 
-def show_normalized_scene_plot(TITLE, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS):
+def scene_scatter_plot(TITLE_SC, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS):
     # Bigger figure for Streamlit
     fig, ax = plt.subplots(figsize=(6,6))
     plt.suptitle(TITLE, fontsize=12, fontweight='bold', y=0.95)
@@ -212,6 +231,62 @@ def show_normalized_scene_plot(TITLE, P_norm, E_norm, locations, SCENE_STYLES, S
 
     return fig
 
+def scene_distrib_plot(df_row,TITLE_DS):
+    df_copy = df_row.copy()
+    df_selected = df_copy.drop("ID", axis = 1)
+
+    # Rename columns
+    column_map = {
+        'pleasant': 'PAQ1',
+        'vibrant': 'PAQ2',
+        'eventful': 'PAQ3',
+        'chaotic': 'PAQ4',
+        'annoying': 'PAQ5',
+        'monotonous': 'PAQ6',
+        'uneventful': 'PAQ7',
+        'calm': 'PAQ8'
+    }
+    df_selected = df_selected.rename(columns=column_map)
+    
+    # --- Add ISO coordinates ---
+    valid_data = surveys.add_iso_coords(df_selected)
+    
+    # # --- Combine all categories ---
+    category_cols = [col for col in valid_data.columns if col.startswith("Category")]
+    valid_data["Condition"] = valid_data[category_cols].astype(str).agg("+".join, axis=1)
+    
+    # --- FIXED STATIC ORDERING ---
+    unique_conditions = sorted(valid_data["Condition"].unique())
+    
+    # --- FIXED COLOR PALETTE (tab10 based, reproducible) ---
+    cmap = plt.cm.tab10
+    palette = {
+        cond: cmap(i / len(unique_conditions))
+        for i, cond in enumerate(unique_conditions)
+    }
+
+    # --- Plot ---
+    ax = density_plot(
+        valid_data,
+        title=TITLE_DS,
+        hue="Condition",
+        simple_density=True,
+        incl_scatter=True,
+        diagonal_lines=True,
+        fill=True,
+        palette=palette
+    )
+    
+    # --- FIX LEGEND ORDER ---
+    handles, labels = ax.get_legend_handles_labels() 
+    ordered_handles = [handles[labels.index(c)] for c in unique_conditions]
+    ordered_labels = unique_conditions
+    
+    ax.legend(ordered_handles,ordered_labels, loc="lower left", fontsize=8)
+    plt.tight_layout()
+
+    return ax.get_figure()
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: process_script.py <file_path> <file_id>")
@@ -224,9 +299,8 @@ def main():
     # =====================================================
     # LOAD DATA
     # =====================================================
-        df = pd.read_excel(file_path)
-        df,category_map = data_preprocessing(df)
-        #print(df)
+        df_row = pd.read_excel(file_path)
+        df,category_map = data_preprocessing(df_row)
         df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
         df_areas = df.set_index("scene").T
         locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
@@ -238,7 +312,8 @@ def main():
     # =====================================================
     # CONFIGURATION
     # =====================================================
-    TITLE = "Test All Scatter Plots"
+    TITLE_SC = "Test All Scatter Plots"
+    TITLE_DS = "Test Distribution Plots"
     
     # Compute raw values
     P_raw, E_raw = compute_P_E(locations)
@@ -268,9 +343,10 @@ def main():
     def build_scene_labels(columns):
         labels = {}
         for col in columns:
-        # readable label replace "-" with " | " 
-            human = col.replace("-", " | ")
-            labels[col] = human
+            labels[col] = col
+        # # readable label replace "-" with " | " 
+        #     human = col.replace("-", " | ")
+        #     labels[col] = human
         return labels
     
     SCENE_LABELS = build_scene_labels(df.columns)
@@ -289,7 +365,7 @@ def main():
 
     # === Generate PLOT 1 ===
     try:
-      fig = show_normalized_scene_plot(TITLE,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
+      fig = scene_scatter_plot(TITLE_SC,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
       f1 = f"{file_id}_plot1.png"
       out1 = RESULT_DIR / f1
       RESULT_DIR.mkdir(exist_ok=True)
@@ -300,22 +376,16 @@ def main():
     except Exception as e:
       print("plot1 error", e)
 
-    # # === EXAMPLE PLOT 2 === (scatter of first two numeric cols if exist)
-    # try:
-    #     if numeric.shape[1] >= 2:
-    #         fig, ax = plt.subplots(figsize=(6,4))
-    #         x = numeric.columns[0]
-    #         y = numeric.columns[1]
-    #         ax.scatter(numeric[x], numeric[y], alpha=0.7)
-    #         ax.set_xlabel(x); ax.set_ylabel(y)
-    #         ax.set_title(f"{x} vs {y}")
-    #         f2 = f"{file_id}_plot2.png"
-    #         out2 = RESULT_DIR / f2
-    #         fig.savefig(out2, bbox_inches="tight", dpi=200)
-    #         plt.close(fig)
-    #         plots.append(f2)
-    # except Exception as e:
-    #     print("plot2 error", e)
+    #  === Generate PLOT 2 === 
+    try:
+        fig = scene_distrib_plot(df_row,TITLE_DS)
+        f2 = f"{file_id}_plot2.png"
+        out2 = RESULT_DIR / f2
+        fig.savefig(out2, bbox_inches="tight", dpi=200)
+        plt.close(fig)
+        plots.append(f2)
+    except Exception as e:
+        print("plot2 error", e)
 
     # === Save JSON summary ===
     meta = read_meta()
