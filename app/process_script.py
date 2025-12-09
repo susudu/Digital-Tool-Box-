@@ -365,17 +365,17 @@ def main():
         print("data preview error:", e)
 
     # === Generate PLOT 1 ===
-    try:
-      fig = scene_scatter_plot(TITLE_SC,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
-      f1 = f"{file_id}_plot1.png"
-      out1 = RESULT_DIR / f1
-      RESULT_DIR.mkdir(exist_ok=True)
-      fig.savefig(out1, bbox_inches="tight", dpi=200)
-      plt.close(fig)
-      plots.append(f1)
-      #preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
+    try:  
+        fig = scene_scatter_plot(TITLE_SC,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
+        f1 = f"{file_id}_plot1.png"
+        out1 = RESULT_DIR / f1
+        RESULT_DIR.mkdir(exist_ok=True)
+        fig.savefig(out1, bbox_inches="tight", dpi=200)
+        plt.close(fig)
+        plots.append(f1)
+        #preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
     except Exception as e:
-      print("plot1 error", e)
+        print("plot1 error", e)
 
     #  === Generate PLOT 2 === 
     try:
