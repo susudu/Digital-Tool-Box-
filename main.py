@@ -387,13 +387,13 @@ HTML_CONTENT = """
 
     /* === Click-to-Zoom Overlay === */
     #zoom-overlay {
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       background: rgba(0,0,0,0.8);
-      display: none;
       justify-content: center;
       align-items: center;
       z-index: 10000;
@@ -550,11 +550,11 @@ function pollMultiple(entries){
           for(const p of info.plots){
             const wrap = document.createElement('div'); wrap.className='plot-thumb';
             
-            # const a = document.createElement('a'); a.href = `/result/${entry.file_id}/${p}`; a.target='_blank';
-            # const img = document.createElement('img'); img.src = `/result/${entry.file_id}/${p}`; img.alt=p;
-            # img.addEventListener('click', ()=> { basicLightbox.create(`<img src="/result/${entry.file_id}/${p}" style="width:100%;height:auto;">`).show(); });
-            # a.appendChild(img);
-            # wrap.appendChild(a);
+            // const a = document.createElement('a'); a.href = `/result/${entry.file_id}/${p}`; a.target='_blank';
+            // const img = document.createElement('img'); img.src = `/result/${entry.file_id}/${p}`; img.alt=p;
+            // img.addEventListener('click', ()=> { basicLightbox.create(`<img src="/result/${entry.file_id}/${p}" style="width:100%;height:auto;">`).show(); });
+            // a.appendChild(img);
+            // wrap.appendChild(a);
 
             const img = document.createElement('img');
             img.className = "zoomable";
@@ -602,11 +602,11 @@ async function loadHistory(){
       if(item.plots && item.plots.length){
         const row = document.createElement('div'); row.style.display='flex'; row.style.flexWrap='wrap'; row.style.gap='8px'; row.style.marginTop='8px';
         for(const p of item.plots){
-          # const a = document.createElement('a'); a.href = `/result/${p.split('_')[0]}/${p}`; a.target='_blank';
-          # const img = document.createElement('img'); img.src = `/result/${p.split('_')[0]}/${p}`; img.style.maxWidth='140px'; img.style.borderRadius='6px';
-          # img.style.border='1px solid #eef2f7';
-          # a.appendChild(img);
-          # row.appendChild(a);
+          // const a = document.createElement('a'); a.href = `/result/${p.split('_')[0]}/${p}`; a.target='_blank';
+          // const img = document.createElement('img'); img.src = `/result/${p.split('_')[0]}/${p}`; img.style.maxWidth='140px'; img.style.borderRadius='6px';
+          // img.style.border='1px solid #eef2f7';
+          // a.appendChild(img);
+          // row.appendChild(a);
 
           const img = document.createElement('img');
           img.className = "zoomable";
