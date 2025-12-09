@@ -384,9 +384,37 @@ HTML_CONTENT = """
     input:checked + .slider:before {
       transform: translateX(26px);
     }
+
+    /* === Click-to-Zoom Overlay === */
+    #zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    
+    #zoom-image {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+
+
+
+    
   </style>
 </head>
 <body>
+  <div id="zoom-overlay">
+    <img id="zoom-image">
+  </div>
+
   <div class="container">
     <div class="card">
       <h1>Digital Toolbox — Multi-file Upload </h1>
@@ -521,11 +549,20 @@ function pollMultiple(entries){
           plotsBox.innerHTML = ''; // clear then add
           for(const p of info.plots){
             const wrap = document.createElement('div'); wrap.className='plot-thumb';
-            const a = document.createElement('a'); a.href = `/result/${entry.file_id}/${p}`; a.target='_blank';
-            const img = document.createElement('img'); img.src = `/result/${entry.file_id}/${p}`; img.alt=p;
-            img.addEventListener('click', ()=> { basicLightbox.create(`<img src="/result/${entry.file_id}/${p}" style="width:100%;height:auto;">`).show(); });
-            a.appendChild(img);
-            wrap.appendChild(a);
+            
+            # const a = document.createElement('a'); a.href = `/result/${entry.file_id}/${p}`; a.target='_blank';
+            # const img = document.createElement('img'); img.src = `/result/${entry.file_id}/${p}`; img.alt=p;
+            # img.addEventListener('click', ()=> { basicLightbox.create(`<img src="/result/${entry.file_id}/${p}" style="width:100%;height:auto;">`).show(); });
+            # a.appendChild(img);
+            # wrap.appendChild(a);
+
+            const img = document.createElement('img');
+            img.className = "zoomable";
+            img.src = `/result/${entry.file_id}/${p}`;
+            img.alt = p;
+
+            wrap.appendChild(img);
+            
             const cap = document.createElement('div'); cap.className='small'; cap.innerText = p;
             wrap.appendChild(cap);
             plotsBox.appendChild(wrap);
@@ -565,11 +602,20 @@ async function loadHistory(){
       if(item.plots && item.plots.length){
         const row = document.createElement('div'); row.style.display='flex'; row.style.flexWrap='wrap'; row.style.gap='8px'; row.style.marginTop='8px';
         for(const p of item.plots){
-          const a = document.createElement('a'); a.href = `/result/${p.split('_')[0]}/${p}`; a.target='_blank';
-          const img = document.createElement('img'); img.src = `/result/${p.split('_')[0]}/${p}`; img.style.maxWidth='140px'; img.style.borderRadius='6px';
-          img.style.border='1px solid #eef2f7';
-          a.appendChild(img);
-          row.appendChild(a);
+          # const a = document.createElement('a'); a.href = `/result/${p.split('_')[0]}/${p}`; a.target='_blank';
+          # const img = document.createElement('img'); img.src = `/result/${p.split('_')[0]}/${p}`; img.style.maxWidth='140px'; img.style.borderRadius='6px';
+          # img.style.border='1px solid #eef2f7';
+          # a.appendChild(img);
+          # row.appendChild(a);
+
+          const img = document.createElement('img');
+          img.className = "zoomable";
+          img.src = `/result/${p.split('_')[0]}/${p}`;
+          img.style.maxWidth = "140px";
+          img.style.borderRadius = "6px";
+          img.style.border = "1px solid #eef2f7";
+
+          row.appendChild(img);
         }
         el.appendChild(row);
       }
@@ -594,6 +640,24 @@ document.getElementById("toggle-paired").addEventListener("change", function() {
     fetch("/toggle_paired?enabled=" + isOn);
 });
 </script>
+
+<script>
+// === CLICK TO ZOOM ===
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains("zoomable")) {
+      const overlay = document.getElementById("zoom-overlay");
+      const zoomImg = document.getElementById("zoom-image");
+
+      zoomImg.src = e.target.src;
+      overlay.style.display = "flex";
+  }
+});
+
+document.getElementById("zoom-overlay").addEventListener("click", () => {
+    document.getElementById("zoom-overlay").style.display = "none";
+});
+</script>
+
 
 </body>
 </html>
