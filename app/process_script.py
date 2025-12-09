@@ -210,10 +210,10 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
 def scene_scatter_plot(TITLE_SC, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS):
     # Bigger figure for Streamlit
     fig, ax = plt.subplots(figsize=(6,6))
-    plt.suptitle(TITLE, fontsize=12, fontweight='bold', y=0.95)
+    plt.suptitle(TITLE_SC, fontsize=12, fontweight='bold', y=0.95)
 
     # Plot the points
-    plot_PE(ax, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS, TITLE)
+    plot_PE(ax, P_norm, E_norm, locations, SCENE_STYLES, SCENE_LABELS, TITLE_SC)
 
     # ----- LEGEND OUTSIDE -----
     handles, labels = ax.get_legend_handles_labels()
