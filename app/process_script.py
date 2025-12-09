@@ -10,6 +10,7 @@ from pathlib import Path
 from soundscapy.plotting import density_plot
 import soundscapy.surveys as surveys
 import seaborn as sns
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
