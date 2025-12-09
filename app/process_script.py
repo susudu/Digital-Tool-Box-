@@ -377,16 +377,16 @@ def main():
     except Exception as e:
         print("plot1 error", e)
 
-    #  === Generate PLOT 2 === 
-    try:
-        fig = scene_distrib_plot(df_row,TITLE_DS)
-        f2 = f"{file_id}_plot2.png"
-        out2 = RESULT_DIR / f2
-        fig.savefig(out2, bbox_inches="tight", dpi=200)
-        plt.close(fig)
-        plots.append(f2)
-    except Exception as e:
-        print("plot2 error", e)
+    # #  === Generate PLOT 2 === 
+    # try:
+    #     fig = scene_distrib_plot(df_row,TITLE_DS)
+    #     f2 = f"{file_id}_plot2.png"
+    #     out2 = RESULT_DIR / f2
+    #     fig.savefig(out2, bbox_inches="tight", dpi=200)
+    #     plt.close(fig)
+    #     plots.append(f2)
+    # except Exception as e:
+    #     print("plot2 error", e)
 
     # === Save JSON summary ===
     meta = read_meta()
