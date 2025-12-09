@@ -72,6 +72,14 @@ def cleanup_old_files(max_age_days=7):
 def index():
     return HTML_CONTENT  # defined below
 
+paired_connectors_enabled = True  # global switch
+
+@app.get("/toggle_paired")
+def toggle_paired(enabled: bool):
+    global paired_connectors_enabled
+    paired_connectors_enabled = enabled
+    return {"paired_connectors": enabled}
+
 # Upload endpoint used by the JS uploader form
 @app.post("/upload_html")
 async def upload_html(file: UploadFile):
