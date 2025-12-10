@@ -1,1 +1,1 @@
-paired_connectors_enabled = True
+paired_connectors_enabled = False
