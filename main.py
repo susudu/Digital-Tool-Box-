@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, UploadFile, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-import settings
+from app import settings
 
 ROOT = Path(__file__).parent
 UPLOAD_DIR = ROOT / "uploads"
