@@ -426,7 +426,7 @@ HTML_CONTENT = """
          <input type="checkbox" id="toggle-paired">
          <span class="slider round"></span>
         </label>
-        <span id="toggle-text">Paired Connectors: Off</span>
+        <span id="toggle-text">Paired Connectors: OFF</span>
 
       </div>
 
