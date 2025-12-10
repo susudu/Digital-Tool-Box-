@@ -169,7 +169,7 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
                    edgecolor='black', linewidth=0.6, zorder=3)
 
     # Connect points if toggle button on
-    if paired_connectors_enabled:
+    if settings.paired_connectors_enabled:
         for i in range(0, len(P_values)-1, 2):
             ax.plot([P_values[i], P_values[i+1]], [E_values[i], E_values[i+1]],
                     linestyle='-', color='gray', linewidth=0.8, alpha=0.5, zorder=2)
