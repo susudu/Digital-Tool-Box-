@@ -423,10 +423,10 @@ HTML_CONTENT = """
         <input id="fileInput" type="file" accept=".xlsx" multiple />
         <div class="meta" id="meta">Supported: .xlsx</div>
         <label class="switch">
-         <input type="checkbox" id="toggle-paired" checked>
+         <input type="checkbox" id="toggle-paired">
          <span class="slider round"></span>
         </label>
-        <span id="toggle-text">Paired Connectors: ON</span>
+        <span id="toggle-text">Paired Connectors: Off</span>
 
       </div>
 
@@ -628,17 +628,20 @@ loadHistory();
 </script>
 
 <script>
+// reset backend toggle to OFF on page load
+fetch("/toggle_paired?enabled=false");
+
 document.getElementById("toggle-paired").addEventListener("change", function() {
     const isOn = this.checked;
-    
-    // Change label text
+
     document.getElementById("toggle-text").innerText =
         isOn ? "Paired Connectors: ON" : "Paired Connectors: OFF";
 
-    // Optional: send update to backend
+    // Notify backend
     fetch("/toggle_paired?enabled=" + isOn);
 });
 </script>
+
 
 <script>
 // === CLICK TO ZOOM ===
@@ -656,7 +659,6 @@ document.getElementById("zoom-overlay").addEventListener("click", () => {
     document.getElementById("zoom-overlay").style.display = "none";
 });
 </script>
-
 
 </body>
 </html>
