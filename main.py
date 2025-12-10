@@ -423,7 +423,7 @@ HTML_CONTENT = """
         <input id="fileInput" type="file" accept=".xlsx" multiple />
         <div class="meta" id="meta">Supported: .xlsx</div>
         <label class="switch">
-         <input type="checkbox" id="toggle-paired">
+         <input type="checkbox" id="toggle-paired" checked>
          <span class="slider round"></span>
         </label>
         <span id="toggle-text">Paired Connectors: OFF</span>
@@ -628,12 +628,14 @@ loadHistory();
 </script>
 
 <script>
-// reset backend toggle to OFF on page load
-fetch("/toggle_paired?enabled=false");
+// Set initial state (OFF by default)
+const toggle = document.getElementById("toggle-paired");
+toggle.checked = false;  // start OFF
+document.getElementById("toggle-text").innerText = "Paired Connectors: OFF";
 
-document.getElementById("toggle-paired").addEventListener("change", function() {
+// Add event listener after initial state
+toggle.addEventListener("change", function() {
     const isOn = this.checked;
-
     document.getElementById("toggle-text").innerText =
         isOn ? "Paired Connectors: ON" : "Paired Connectors: OFF";
 
