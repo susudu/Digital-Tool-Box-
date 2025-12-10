@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, UploadFile, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import settings
 
 ROOT = Path(__file__).parent
 UPLOAD_DIR = ROOT / "uploads"
@@ -71,13 +72,11 @@ def cleanup_old_files(max_age_days=7):
 @app.get("/", response_class=HTMLResponse)
 def index():
     return HTML_CONTENT  # defined below
-
-paired_connectors_enabled = True  # global switch
-
-@app.get("/toggle_paired")
+    
+# Paired connectors toggling
+@app.post("/toggle_paired")
 def toggle_paired(enabled: bool):
-    global paired_connectors_enabled
-    paired_connectors_enabled = enabled
+    settings.paired_connectors_enabled = enabled
     return {"paired_connectors": enabled}
 
 # Upload endpoint used by the JS uploader form
