@@ -74,7 +74,7 @@ def index():
     return HTML_CONTENT  # defined below
     
 # Paired connectors toggling
-@app.post("/toggle_paired")
+@app.get("/toggle_paired")
 def toggle_paired(enabled: bool):
     settings.paired_connectors_enabled = enabled
     return {"paired_connectors": enabled}
