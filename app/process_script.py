@@ -12,7 +12,7 @@ import soundscapy.surveys as surveys
 import seaborn as sns
 import re
 import settings
-import requets
+import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
