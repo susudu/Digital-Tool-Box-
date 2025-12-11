@@ -12,6 +12,7 @@ import soundscapy.surveys as surveys
 import seaborn as sns
 import re
 import settings
+import requets
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
@@ -39,6 +40,13 @@ def update_meta(file_id, **kwargs):
         return
     meta[file_id].update(kwargs)
     write_meta(meta)
+
+def get_paired_toggle():
+    try:
+        r = requests.get("https://your-domain/debug_toggle", timeout=3)
+        return r.json().get("paired_connectors", False)
+    except:
+        return False
 
 def data_preprocessing(df):
     # clean the ID column in-place
@@ -168,11 +176,15 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
                    s=45, alpha=0.8,
                    edgecolor='black', linewidth=0.6, zorder=3)
 
+    paired_on = get_paired_toggle()
+
     # Connect points if toggle button on
-    if settings.paired_connectors_enabled:
+    if paired_on:
         for i in range(0, len(P_values)-1, 2):
             ax.plot([P_values[i], P_values[i+1]], [E_values[i], E_values[i+1]],
                     linestyle='-', color='gray', linewidth=0.8, alpha=0.5, zorder=2)
+    else:
+        pass
 
     # Axes & grid
     ax.set_xlim(-1.05, 1.05)
