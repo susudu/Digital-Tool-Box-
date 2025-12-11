@@ -79,6 +79,10 @@ def toggle_paired(enabled: bool):
     settings.paired_connectors_enabled = enabled
     return {"paired_connectors": enabled}
 
+@app.get("/debug_toggle")
+def debug_toggle():
+    return {"paired_connectors": settings.paired_connectors_enabled}
+
 # Upload endpoint used by the JS uploader form
 @app.post("/upload_html")
 async def upload_html(file: UploadFile):
