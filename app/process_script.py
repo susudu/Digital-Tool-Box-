@@ -28,7 +28,7 @@ FIXED_MAX = 7.0   # freely change to 6, 6.5, 7, etc.
 
 def get_paired_toggle():
     try:
-        r = requests.get("https://your-domain/debug_toggle", timeout=3)
+        r = requests.get("https://digital-tool-box-ui.onrender.com/debug_toggle", timeout=3)
         return r.json().get("paired_connectors", False)
     except:
         return False
