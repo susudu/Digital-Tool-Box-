@@ -180,12 +180,12 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
 
     # Connect points if toggle button on
     if paired_on:
-        print("PAIRED CONNECTORS: ON — drawing lines")
+        print(paired_on,"PAIRED CONNECTORS: ON — drawing lines")
         for i in range(0, len(P_values)-1, 2):
             ax.plot([P_values[i], P_values[i+1]], [E_values[i], E_values[i+1]],
                     linestyle='-', color='gray', linewidth=0.8, alpha=0.5, zorder=2)
     else:
-        print("PAIRED CONNECTORS: OFF — drawing lines")
+        print(paired_on,"PAIRED CONNECTORS: OFF — drawing lines")
         pass
 
     # Axes & grid
