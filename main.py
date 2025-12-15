@@ -12,6 +12,17 @@ from fastapi import FastAPI, UploadFile, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app import settings
+from fastapi.middleware.cors import CORSMiddleware
+
+# allow WordPress to access FastAPI (CORS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://acoustics.ids-research.de"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 ROOT = Path(__file__).parent
 UPLOAD_DIR = ROOT / "uploads"
