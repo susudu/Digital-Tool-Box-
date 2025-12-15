@@ -11,18 +11,8 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, UploadFile, Form, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from app import settings
 from fastapi.middleware.cors import CORSMiddleware
-
-# allow WordPress to access FastAPI (CORS)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://acoustics.ids-research.de"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+from app import settings
 
 ROOT = Path(__file__).parent
 UPLOAD_DIR = ROOT / "uploads"
@@ -33,6 +23,15 @@ for d in (UPLOAD_DIR, RESULT_DIR):
     d.mkdir(exist_ok=True)
 
 app = FastAPI(title="Digital Toolbox Backend")
+
+# allow WordPress to access FastAPI (CORS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://acoustics.ids-research.de"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # load/create meta index
 if not METAFILE.exists():
