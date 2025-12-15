@@ -461,6 +461,8 @@ pickBtn.addEventListener('click', ()=>fileInput.click());
 });
 
 uploader.addEventListener('drop', async e=>{
+  e.preventDefault();
+  fileInput.value = "";   // reset the value to upload the same file again
   const files = Array.from(e.dataTransfer.files).filter(f=>f.name.endsWith('.xlsx'));
   if(files.length) startUploads(files);
 });
@@ -471,6 +473,8 @@ fileInput.addEventListener('change', e=>{
 });
 
 async function startUploads(files){
+  // reset input to accept same file 
+  fileInput.value = "";
   meta.textContent = `Uploading ${files.length} file(s)...`;
   const fileEntries = [];
   for(const file of files){
