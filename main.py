@@ -80,8 +80,9 @@ def cleanup_old_files(max_age_days=7):
 
 # Serve root HTML
 @app.get("/", response_class=HTMLResponse)
-def index():
-    return HTML_CONTENT  # defined below
+def index(request: Request):
+    embed = request.query_params.get("embed") == "true"
+    return HTML_CONTENT_EMBED if embed else HTML_CONTENT
     
 # Paired connectors toggling
 @app.get("/toggle_paired")
@@ -417,9 +418,6 @@ HTML_CONTENT = """
       max-height: 90%;
       border-radius: 10px;
     }
-
-
-
     
   </style>
 </head>
@@ -683,4 +681,35 @@ document.getElementById("zoom-overlay").addEventListener("click", () => {
 </body>
 </html>
 """
+
+# ---------------------------
+# EMBEDDED dashboard (iframe-safe)
+# ---------------------------
+HTML_CONTENT_EMBED = """
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: #f7fafc;
+    }
+    .container {
+      max-width: 100%;
+      padding: 12px;
+    }
+    h1 { display: none; }
+    .upload-area {
+      border-radius: 12px;
+    }
+    .history {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+""" + HTML_CONTENT.split("<body>")[1]
 
