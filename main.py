@@ -14,6 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app import settings
 
+HTML_CONTENT = """ full dashboard HTML """
+HTML_CONTENT_EMBED = """ embed-friendly HTML """
+
 ROOT = Path(__file__).parent
 UPLOAD_DIR = ROOT / "uploads"
 RESULT_DIR = ROOT / "results"
@@ -80,9 +83,18 @@ def cleanup_old_files(max_age_days=7):
 
 # Serve root HTML
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    embed = request.query_params.get("embed") == "true"
-    return HTML_CONTENT_EMBED if embed else HTML_CONTENT
+def dashboard():
+    return HTML_CONTENT
+
+@app.get("/embed", response_class=HTMLResponse)
+def dashboard_embed():
+    return HTML_CONTENT_EMBED
+
+@app.get("/embed", response_class=HTMLResponse)
+def dashboard_embed():
+    response = HTMLResponse(HTML_CONTENT_EMBED)
+    response.headers["X-Frame-Options"] = "ALLOWALL"
+    return response
     
 # Paired connectors toggling
 @app.get("/toggle_paired")
