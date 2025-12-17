@@ -430,7 +430,11 @@ HTML_CONTENT = """
       max-height: 90%;
       border-radius: 10px;
     }
-    
+
+    /* Hide the default file input */
+    #fileInput {
+      display: none;
+    }
   </style>
 </head>
 <body>
