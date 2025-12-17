@@ -26,6 +26,28 @@ locations = {}
 # =====================================================
 FIXED_MAX = 7.0   # freely change to 6, 6.5, 7, etc.
 
+# ================================================================================================
+# Module/ Topic based approach - Decide which plots are possible based on data in columns of the file (safer than using the file name)
+# ================================================================================================
+def detect_plot_capabilities(df_raw: pd.DataFrame) -> dict:
+    ## Seperate topics based on column data of files
+    cols = set(df_raw.columns.str.lower())
+
+    iso_required = {
+        "eventful", "vibrant", "pleasant", "calm",
+        "uneventful", "monotonous", "annoying", "chaotic"
+    } 
+    
+    # 1. Scatter and distribution Visualization
+    has_iso = iso_required.issubset(cols)
+    # 2. Absorption Visualization
+    has_categories = any(c.startswith("facade") for c in cols)
+
+    return {
+        "scatter_distribution": has_iso,
+        "absorption": has_categories
+    }
+
 def get_paired_toggle():
     try:
         r = requests.get("https://digital-tool-box-ui.onrender.com/debug_toggle", timeout=3)
@@ -324,6 +346,9 @@ def main():
     # LOAD DATA
     # =====================================================
         df_row = pd.read_excel(file_path)
+        plot_caps = detect_plot_capabilities(df_row)
+        # print("Plot capabilities:", plot_caps)
+        
         df,category_map = data_preprocessing(df_row)
         df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
         df_areas = df.set_index("scene").T
@@ -387,29 +412,79 @@ def main():
     except Exception as e:
         print("data preview error:", e)
 
-    # === Generate PLOT 1 ===
-    try:  
-        fig = scene_scatter_plot(TITLE_SC,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
-        f1 = f"{file_id}_plot1.png"
-        out1 = RESULT_DIR / f1
-        RESULT_DIR.mkdir(exist_ok=True)
-        fig.savefig(out1, bbox_inches="tight", dpi=200)
-        plt.close(fig)
-        plots.append(f1)
-        #preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
-    except Exception as e:
-        print("plot1 error", e)
+        # ---------- SCATTER_DISTRIBUTION: TWO PLOTS ----------
+    if plot_caps["scatter_distribution"]:
+        try:
+            # ---- Plot 1: Scatter plot with all data points ----
+            fig1 = scene_scatter_plot(
+                TITLE_SC + " (Normalized)",
+                P_norm=P_norm,
+                E_norm=E_norm,
+                locations=locations,
+                SCENE_STYLES=SCENE_STYLES,
+                SCENE_LABELS=SCENE_LABELS
+            )
+    
+            f1 = f"{file_id}_scatter.png"
+            fig1.savefig(RESULT_DIR / f1, bbox_inches="tight", dpi=200)
+            plt.close(fig1)
+            plots.append(f1)
+    
+            # ---- Plot 2: Distribution plot ----
+            fig2 = scene_scatter_plot(
+                TITLE_SC + " (Raw)",
+                P_norm=P_raw,     
+                E_norm=E_raw,
+                locations=locations,
+                SCENE_STYLES=SCENE_STYLES,
+                SCENE_LABELS=SCENE_LABELS
+            )
+    
+            f2 = f"{file_id}_scatter_raw.png"
+            fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
+            plt.close(fig2)
+            plots.append(f2)
+    
+        except Exception as e:
+            print("scatter plot error:", e)
+    
+    
+    # ---------- ABSORPTION: ONE PLOT ----------
+    if plot_caps["absorption"]:
+        try:
+            fig = scene_scatter_plot(df_row, TITLE_DS)
+    
+            f3 = f"{file_id}_distribution.png"
+            fig.savefig(RESULT_DIR / f3, bbox_inches="tight", dpi=200)
+            plt.close(fig)
+            plots.append(f3)
+    
+        except Exception as e:
+            print("distribution plot error:", e)
 
-    #  === Generate PLOT 2 === 
-    try:
-        fig = scene_distrib_plot(df_row,TITLE_DS)
-        f2 = f"{file_id}_plot2.png"
-        out2 = RESULT_DIR / f2
-        fig.savefig(out2, bbox_inches="tight", dpi=200)
-        plt.close(fig)
-        plots.append(f2)
-    except Exception as e:
-        print("plot2 error", e)
+    # # === Generate PLOT 1 ===
+    # try:  
+    #     fig = scene_scatter_plot(TITLE_SC,P_norm=P_norm,E_norm=E_norm,locations=locations,SCENE_STYLES=SCENE_STYLES,SCENE_LABELS=SCENE_LABELS)
+    #     f1 = f"{file_id}_plot1.png"
+    #     out1 = RESULT_DIR / f1
+    #     RESULT_DIR.mkdir(exist_ok=True)
+    #     fig.savefig(out1, bbox_inches="tight", dpi=200)
+    #     plt.close(fig)
+    #     plots.append(f1)
+    #     #preview_html += f"<div><strong>Preview:</strong><br><img src='/result/{file_id}/{f1}' style='max-width:360px'></div>"
+    # except Exception as e:
+    #     print("plot1 error", e)
+
+    # #  === Generate PLOT 2 === 
+    # try:
+    #     fig = scene_distrib_plot(df_row,TITLE_DS)
+    #     f2 = f"{file_id}_plot2.png"
+    #     out2 = RESULT_DIR / f2
+    #     fig.savefig(out2, bbox_inches="tight", dpi=200)
+    #     plt.close(fig)
+    #     plots.append(f2)
+    # except Exception as e:
+    #     print("plot2 error", e)
 
     # === Save JSON summary ===
     meta = read_meta()
