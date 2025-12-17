@@ -417,7 +417,7 @@ def main():
         try:
             # ---- Plot 1: Scatter plot with all data points ----
             fig1 = scene_scatter_plot(
-                TITLE_SC + " (Normalized)",
+                TITLE_SC + " (Singed Normalized)",
                 P_norm=P_norm,
                 E_norm=E_norm,
                 locations=locations,
@@ -431,8 +431,8 @@ def main():
             plots.append(f1)
     
             # ---- Plot 2: Distribution plot ----
-            fig2 = scene_scatter_plot(
-                TITLE_SC + " (Raw)",
+            fig2 = scene_distrib_plot(
+                TITLE_DC + " (Singed Normalized)",
                 P_norm=P_raw,     
                 E_norm=E_raw,
                 locations=locations,
@@ -440,7 +440,7 @@ def main():
                 SCENE_LABELS=SCENE_LABELS
             )
     
-            f2 = f"{file_id}_scatter_raw.png"
+            f2 = f"{file_id}_distribution.png"
             fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
             plt.close(fig2)
             plots.append(f2)
