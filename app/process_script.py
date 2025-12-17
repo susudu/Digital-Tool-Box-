@@ -425,44 +425,41 @@ def main():
 
         preview_html, plots = preview_rowdata(df)
         
-            # ---------- SCATTER_DISTRIBUTION: TWO PLOTS ----------
+        # ---------- SCATTER_DISTRIBUTION: TWO PLOTS ----------
+        try:
+            # ---- Plot 1: Scatter plot with all data points ----
+            fig1 = scene_scatter_plot(
+                TITLE_SC + "(Singed Normalized)",
+                P_norm=P_norm,
+                E_norm=E_norm,
+                locations=locations,
+                SCENE_STYLES=SCENE_STYLES,
+                SCENE_LABELS=SCENE_LABELS
+            )
         
-            try:
-                # ---- Plot 1: Scatter plot with all data points ----
-                fig1 = scene_scatter_plot(
-                    TITLE_SC + "(Singed Normalized)",
-                    P_norm=P_norm,
-                    E_norm=E_norm,
-                    locations=locations,
-                    SCENE_STYLES=SCENE_STYLES,
-                    SCENE_LABELS=SCENE_LABELS
-                )
+            f1 = f"{file_id}_scatter.png"
+            fig1.savefig(RESULT_DIR / f1, bbox_inches="tight", dpi=200)
+            plt.close(fig1)
+            plots.append(f1)
         
-                f1 = f"{file_id}_scatter.png"
-                fig1.savefig(RESULT_DIR / f1, bbox_inches="tight", dpi=200)
-                plt.close(fig1)
-                plots.append(f1)
+            # ---- Plot 2: Distribution plot ----
+            fig2 = scene_distrib_plot(
+                df_row,
+                TITLE_DS + "(Singed Normalized)"
+            )
         
-                # ---- Plot 2: Distribution plot ----
-                fig2 = scene_distrib_plot(df_row,
-                    TITLE_DS + "(Singed Normalized)"
-                )
+            f2 = f"{file_id}_density.png"
+            fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
+            plt.close(fig2)
+            plots.append(f2)
         
-                f2 = f"{file_id}_density.png"
-                fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
-                plt.close(fig2)
-                plots.append(f2)
-        
-            except Exception as e:
-                print("scatter plot error:", e)
+        except Exception as e:
+            print("scatter plot error:", e)
     
     if plot_caps["absorption"]:
-    
-    # ---------- ABSORPTION: ONE PLOT ----------
-    
+        # ---------- ABSORPTION: ONE PLOT ----------
         try:
             fig = scene_distrib_plot(df_row, TITLE_DS)
-    
             f3 = f"{file_id}_distribution.png"
             fig.savefig(RESULT_DIR / f3, bbox_inches="tight", dpi=200)
             plt.close(fig)
