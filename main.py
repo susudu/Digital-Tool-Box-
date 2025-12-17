@@ -775,6 +775,10 @@ HTML_CONTENT_EMBED = """
         width: 100%;
         border: none;
     }
+
+    #fileInput {
+      display: none;
+    }
   </style>
 </head>
 <body>
