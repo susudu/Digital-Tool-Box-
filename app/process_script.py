@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
 RESULT_DIR = ROOT / "results"
 METAFILE = ROOT / "results_meta.json"
+BASE_DIR = Path(__file__).resolve().parent
+# path for material lookup file
+DATA_FILE = BASE_DIR / "data" / "material_lookup.xlsx"
 
 locations = {}
 
@@ -108,6 +111,20 @@ def data_preprocessing(df):
     # after transpose, index rename to "scene"
     df_pivot = df_pivot.rename_axis("scene").reset_index()
     return df_pivot, category_maps
+
+def preview_rowdata(df):
+    plots = []
+    preview_html = ""
+
+    # === EXCEL DATA PREVIEW ===
+    try:
+        preview_df = df.head(10)  # first 10 rows
+        preview_html += "<h3>Data Preview</h3>"
+        preview_html += preview_df.to_html(border=1, index=False)
+    except Exception as e:
+        print("Data preview error:", e)
+
+    return preview_html, plots
 
 def restore_category_from_scene(scene, category_maps):
     parts = scene.split("_")
@@ -346,106 +363,103 @@ def main():
     # LOAD DATA
     # =====================================================
         df_row = pd.read_excel(file_path)
-        plot_caps = detect_plot_capabilities(df_row)
-        # print("Plot capabilities:", plot_caps)
-        
-        df,category_map = data_preprocessing(df_row)
-        df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
-        df_areas = df.set_index("scene").T
-        locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}
     except Exception as e:
         update_meta(file_id, status="error")
         print("Error reading file:", e)
         return
-      
-    # =====================================================
-    # CONFIGURATION
-    # =====================================================
-    TITLE_SC = " All Scatter Plot "
-    TITLE_DS = " Density Plot "
-    
-    # Compute raw values
-    P_raw, E_raw = compute_P_E(locations)
-    
-    # Apply fixed normalization
-    P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
-    E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
 
-    # =====================================================
-    # SCENE STYLE & LABEL DEFINITIONS
-    # =====================================================
-    COLORS = [
-    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', 
-    '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', 
-    '#bcbd22', '#17becf']
-    MARKERS = ['o', 'X', 's', 'D', '^', 'v', '<', '>', 'P', '*']
+    # =================================================================================================
+    # DATA PROCESSING AND ARRANGING BASED ON UPLOAD DATA - Continueation of Module/Topic based approach
+    # =================================================================================================
+    plot_caps = detect_plot_capabilities(df_row)
+    # print("Plot capabilities:", plot_caps)
     
-    def build_scene_styles(scene_labels):
-        styles = {}
-        for i, label in enumerate(scene_labels):
-            styles[label] = {
-                "color": COLORS[i % len(COLORS)],
-                "marker": MARKERS[i % len(MARKERS)]
-            }
-        return styles
+    if plot_caps["scatter_distribution"]:    
+        df,category_map = data_preprocessing(df_row)
+        df.columns = [restore_category_from_scene(col, category_map) for col in df.columns]
+        df_areas = df.set_index("scene").T
+        locations = {area: tuple(df_areas.loc[area]) for area in df_areas.index}  
         
-    def build_scene_labels(columns):
-        labels = {}
-        for col in columns:
-            labels[col] = col
-        # # readable label replace "-" with " | " 
-        #     human = col.replace("-", " | ")
-        #     labels[col] = human
-        return labels
+        # =====================================================
+        # CONFIGURATION
+        # =====================================================
+        TITLE_SC = " All Scatter Plot "
+        TITLE_DS = " Density Plot "
+        
+        # Compute raw values
+        P_raw, E_raw = compute_P_E(locations)
+        
+        # Apply fixed normalization
+        P_norm = signed_normalize_fixed(P_raw, FIXED_MAX)
+        E_norm = signed_normalize_fixed(E_raw, FIXED_MAX)
     
-    SCENE_LABELS = build_scene_labels(df.columns)
-    SCENE_STYLES = build_scene_styles(SCENE_LABELS.keys())
+        # =====================================================
+        # SCENE STYLE & LABEL DEFINITIONS
+        # =====================================================
+        COLORS = [
+        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', 
+        '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', 
+        '#bcbd22', '#17becf']
+        MARKERS = ['o', 'X', 's', 'D', '^', 'v', '<', '>', 'P', '*']
+        
+        def build_scene_styles(scene_labels):
+            styles = {}
+            for i, label in enumerate(scene_labels):
+                styles[label] = {
+                    "color": COLORS[i % len(COLORS)],
+                    "marker": MARKERS[i % len(MARKERS)]
+                }
+            return styles
+            
+        def build_scene_labels(columns):
+            labels = {}
+            for col in columns:
+                labels[col] = col
+            # # readable label replace "-" with " | " 
+            #     human = col.replace("-", " | ")
+            #     labels[col] = human
+            return labels
+        
+        SCENE_LABELS = build_scene_labels(df.columns)
+        SCENE_STYLES = build_scene_styles(SCENE_LABELS.keys())
 
-    plots = []
-    preview_html = ""
-
-    # === EXCEL DATA PREVIEW ===
-    try:
-        preview_df = df.head(10)   # first 10 rows
-        preview_html += "<h3>Data Preview</h3>"
-        preview_html += preview_df.to_html(border=1)
-    except Exception as e:
-        print("data preview error:", e)
-
-        # ---------- SCATTER_DISTRIBUTION: TWO PLOTS ----------
-    if plot_caps["scatter_distribution"]:
-        try:
-            # ---- Plot 1: Scatter plot with all data points ----
-            fig1 = scene_scatter_plot(
-                TITLE_SC + "(Singed Normalized)",
-                P_norm=P_norm,
-                E_norm=E_norm,
-                locations=locations,
-                SCENE_STYLES=SCENE_STYLES,
-                SCENE_LABELS=SCENE_LABELS
-            )
+        preview_html, plots = preview_rowdata(df)
+        
+            # ---------- SCATTER_DISTRIBUTION: TWO PLOTS ----------
+        
+            try:
+                # ---- Plot 1: Scatter plot with all data points ----
+                fig1 = scene_scatter_plot(
+                    TITLE_SC + "(Singed Normalized)",
+                    P_norm=P_norm,
+                    E_norm=E_norm,
+                    locations=locations,
+                    SCENE_STYLES=SCENE_STYLES,
+                    SCENE_LABELS=SCENE_LABELS
+                )
+        
+                f1 = f"{file_id}_scatter.png"
+                fig1.savefig(RESULT_DIR / f1, bbox_inches="tight", dpi=200)
+                plt.close(fig1)
+                plots.append(f1)
+        
+                # ---- Plot 2: Distribution plot ----
+                fig2 = scene_distrib_plot(df_row,
+                    TITLE_DS + "(Singed Normalized)"
+                )
+        
+                f2 = f"{file_id}_density.png"
+                fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
+                plt.close(fig2)
+                plots.append(f2)
+        
+            except Exception as e:
+                print("scatter plot error:", e)
     
-            f1 = f"{file_id}_scatter.png"
-            fig1.savefig(RESULT_DIR / f1, bbox_inches="tight", dpi=200)
-            plt.close(fig1)
-            plots.append(f1)
-    
-            # ---- Plot 2: Distribution plot ----
-            fig2 = scene_distrib_plot(df_row,
-                TITLE_DS + "(Singed Normalized)"
-            )
-    
-            f2 = f"{file_id}_density.png"
-            fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
-            plt.close(fig2)
-            plots.append(f2)
-    
-        except Exception as e:
-            print("scatter plot error:", e)
-    
+    if plot_caps["absorption"]:
     
     # ---------- ABSORPTION: ONE PLOT ----------
-    if plot_caps["absorption"]:
+    
         try:
             fig = scene_distrib_plot(df_row, TITLE_DS)
     
