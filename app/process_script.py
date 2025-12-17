@@ -227,7 +227,7 @@ def plot_PE(ax, P_values, E_values, locations, SCENE_STYLES, SCENE_LABELS, TITLE
     ax.text(-0.56, -0.56, '(Monotonous)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
     ax.text(0.56, -0.56, '(Calm)', color='gray', fontsize=9, ha='center', va='center', alpha=0.7 , fontweight='bold', fontstyle='italic')
 
-    ax.set_title("Fixed-Max Normalized (−1 to 1)", fontsize=10, fontweight='bold')
+    ax.set_title("Fixed-Max Singed Normalized (−1 to 1)", fontsize=10, fontweight='bold')
     ax.set_xlabel("ISOPleasant", fontsize=9)
     ax.set_ylabel("ISOEventful", fontsize=9)
 
@@ -361,8 +361,8 @@ def main():
     # =====================================================
     # CONFIGURATION
     # =====================================================
-    TITLE_SC = "Test All Scatter Plots"
-    TITLE_DS = "Test Distribution Plots"
+    TITLE_SC = " All Scatter Plot "
+    TITLE_DS = " Density Plot "
     
     # Compute raw values
     P_raw, E_raw = compute_P_E(locations)
@@ -417,7 +417,7 @@ def main():
         try:
             # ---- Plot 1: Scatter plot with all data points ----
             fig1 = scene_scatter_plot(
-                TITLE_SC + " (Singed Normalized)",
+                TITLE_SC + "(Singed Normalized)",
                 P_norm=P_norm,
                 E_norm=E_norm,
                 locations=locations,
@@ -432,7 +432,7 @@ def main():
     
             # ---- Plot 2: Distribution plot ----
             fig2 = scene_distrib_plot(
-                TITLE_DC + " (Singed Normalized)",
+                TITLE_DS + "(Singed Normalized)",
                 P_norm=P_raw,     
                 E_norm=E_raw,
                 locations=locations,
@@ -440,7 +440,7 @@ def main():
                 SCENE_LABELS=SCENE_LABELS
             )
     
-            f2 = f"{file_id}_distribution.png"
+            f2 = f"{file_id}_density.png"
             fig2.savefig(RESULT_DIR / f2, bbox_inches="tight", dpi=200)
             plt.close(fig2)
             plots.append(f2)
