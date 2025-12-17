@@ -431,13 +431,8 @@ def main():
             plots.append(f1)
     
             # ---- Plot 2: Distribution plot ----
-            fig2 = scene_distrib_plot(
-                TITLE_DS + "(Singed Normalized)",
-                P_norm=P_raw,     
-                E_norm=E_raw,
-                locations=locations,
-                SCENE_STYLES=SCENE_STYLES,
-                SCENE_LABELS=SCENE_LABELS
+            fig2 = scene_distrib_plot(df_row,
+                TITLE_DS + "(Singed Normalized)"
             )
     
             f2 = f"{file_id}_density.png"
@@ -452,7 +447,7 @@ def main():
     # ---------- ABSORPTION: ONE PLOT ----------
     if plot_caps["absorption"]:
         try:
-            fig = scene_scatter_plot(df_row, TITLE_DS)
+            fig = scene_distrib_plot(df_row, TITLE_DS)
     
             f3 = f"{file_id}_distribution.png"
             fig.savefig(RESULT_DIR / f3, bbox_inches="tight", dpi=200)
