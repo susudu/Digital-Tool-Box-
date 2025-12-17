@@ -695,33 +695,86 @@ document.getElementById("zoom-overlay").addEventListener("click", () => {
 """
 
 # ---------------------------
-# EMBEDDED dashboard (iframe-safe)
+# EMBEDDED dashboard for WordPress
 # ---------------------------
 HTML_CONTENT_EMBED = """
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      background: #f7fafc;
+    /* Reset body/margins */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Inter, Arial, sans-serif;
+        background: #f7fafc;
     }
+
+    /* Center content */
     .container {
-      max-width: 100%;
-      padding: 12px;
+        max-width: 1200px;      /* dashboard width */
+        margin: 0 auto;          /* center horizontally */
+        padding: 20px;
+        box-sizing: border-box;
     }
-    h1 { display: none; }
+
+    /* Hide unnecessary elements for embed */
+    h1, .history, .meta {
+        display: none;
+    }
+
+    /* Upload area styling */
     .upload-area {
-      border-radius: 12px;
+        border-radius: 12px;
+        width: 100%;
+        box-sizing: border-box;
     }
-    .history {
-      display: none;
+
+    /* Plots responsive */
+    .plots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .plot-thumb {
+        width: calc(50% - 10px);
+        max-width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #eef2f7;
+        background: #fff;
+        padding: 6px;
+        text-align: center;
+    }
+
+    .plot-thumb img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* Smaller text */
+    .small {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    /* Make iframe-safe */
+    iframe {
+        width: 100%;
+        border: none;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- REUSE your main dashboard HTML from original page -->
 """ + HTML_CONTENT.split("<body>")[1]
 
