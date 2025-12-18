@@ -731,7 +731,7 @@ def main():
         x_positions = [0, 1, 2, 3, 4, 5]
 
         facade_results = compute_facade_absorption_results(
-        facade_configs=df_row,
+        facade_configs=facade_configs,
         matdf_row=lookup_df,
         freqs=freqs
         )
