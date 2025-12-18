@@ -735,6 +735,8 @@ def main():
         matdf_row=lookup_df,
         freqs=freqs
         )
+
+        preview_html, plots = preview_rowdata(df_row)
         
         # ---------- ABSORPTION: ONE PLOT ----------
         try:
