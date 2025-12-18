@@ -13,6 +13,7 @@ import seaborn as sns
 import re
 import settings
 import requests
+import builtins
 
 ROOT = Path(__file__).resolve().parents[1]
 UPLOAD_DIR = ROOT / "uploads"
@@ -434,7 +435,7 @@ def compute_facade_absorption_results(
     facade_results = {}
 
     for name, materials in facade_configs.items():
-        total_area = sum(materials.values())
+        total_area = builtins.sum(materials.values())
         facade_alpha = {f: 0.0 for f in freqs}
 
         # ------------------------------------------
