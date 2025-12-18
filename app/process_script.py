@@ -73,6 +73,14 @@ def update_meta(file_id, **kwargs):
     meta[file_id].update(kwargs)
     write_meta(meta)
 
+# To access the material data file
+def load_lookup_table():
+    if not DATA_FILE.exists():
+        raise FileNotFoundError(f"Excel file not found: {DATA_FILE}")
+
+    mat_df = pd.read_excel(DATA_FILE)
+    return mat_df
+    
 def data_preprocessing(df):
     # clean the ID column in-place
     df['ID'] = df['ID'].str.replace(r'Assessment \d+', 'Assessment ', regex=True)
@@ -350,6 +358,257 @@ def scene_distrib_plot(df_row,TITLE_DS):
 
     return fig
 
+def weighted_absorption_coefficient(alpha_values):
+    """
+    ISO 11654 fitting:
+    Find the highest candidate Fαw (step = 0.05)
+    such that total deficit ≤ 0.10 across the five bands.
+    """
+    offsets = {
+        0: 0.25,
+        1: 0.00,
+        2: 0.00,
+        3: 0.00,
+        4: 0.25
+    }
+
+    for i in range(20, -1, -1):
+        candidate_aw = i * 0.05
+        total_deficit = 0.0
+
+        for j, alpha in enumerate(alpha_values):
+            reference = max(candidate_aw - offsets.get(j, 0.0), 0.0)
+
+            if alpha < reference:
+                total_deficit += (reference - alpha)
+
+            if total_deficit > 0.10:
+                break
+        else:
+            return candidate_aw
+
+    return 0.0
+
+
+def round_unfavorable(value):
+    """Round down to nearest 0.05 step (ISO classification rule)."""
+    return np.floor(value * 20) / 20
+
+
+def classify_falpha(fa):
+    """Map rounded Fαw to ISO absorption class."""
+    class_ranges = {
+        "A": (0.90, 1.00),
+        "B": (0.80, 0.85),
+        "C": (0.60, 0.75),
+        "D": (0.30, 0.55),
+        "E": (0.15, 0.25),
+        "Not classified": (0.00, 0.10)
+    }
+
+    for cls, (low, high) in class_ranges.items():
+        if low <= fa <= high:
+            return cls
+
+    return "Unclassified"
+
+def compute_facade_absorption_results(
+    facade_configs,
+    matdf_row,
+    freqs
+):
+    """
+    Compute area-weighted absorption curves and Fαw
+    for each façade configuration.
+
+    Returns
+    -------
+    dict
+        {
+            facade_name: {
+                "absorption_curve": [...],
+                "F_alpha": float
+            }
+        }
+    """
+    facade_results = {}
+
+    for name, materials in facade_configs.items():
+        total_area = sum(materials.values())
+        facade_alpha = {f: 0.0 for f in freqs}
+
+        # ------------------------------------------
+        # Sum area-weighted absorption coefficients
+        # ------------------------------------------
+        for material, area in materials.items():
+            if material not in matdf_row.index:
+                print(f"Warning: Material '{material}' not found; skipping.")
+                continue
+
+            mat_values = matdf_row.loc[
+                material, [f"{f} Hz" for f in freqs]
+            ]
+
+            for f in freqs:
+                facade_alpha[f] += mat_values[f"{f} Hz"] * area
+
+        # ------------------------------------------
+        # Normalize by total façade area
+        # ------------------------------------------
+        if total_area > 0:
+            for f in freqs:
+                facade_alpha[f] /= total_area
+
+        absorption_curve = [facade_alpha[f] for f in freqs]
+        F_alpha = weighted_absorption_coefficient(absorption_curve)
+
+        facade_results[name] = {
+            "absorption_curve": absorption_curve,
+            "F_alpha": F_alpha
+        }
+
+        # ------------------------------------------
+        # Print ISO classification
+        # ------------------------------------------
+        fa_class = classify_falpha(round_unfavorable(F_alpha))
+        print(
+            f"{name}: Weighted façade absorption coefficient (Fα) = "
+            f"{F_alpha:.2f} = Class {fa_class}"
+        )
+
+    return facade_results
+
+def plot_facade_absorption(
+    facade_results,
+    x_positions,
+    x_labels,
+    show=True,
+    figsize=(9, 6)
+):
+    """
+    Plot façade absorption curves with ISO 11654 class boundaries
+    and annotate Fαw values.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    """
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Label placement control
+    placed_label_ys = []
+    delta_y = 0.03
+    tolerance = 0.02
+
+    # --------------------------------------------------
+    # 1) Plot façade curves + Fαw labels
+    # --------------------------------------------------
+    for name, result in facade_results.items():
+        x_vals = x_positions[1:]
+        y_vals = result["absorption_curve"]
+
+        (line,) = ax.plot(
+            x_vals,
+            y_vals,
+            marker="o",
+            linewidth=2,
+            label=name
+        )
+
+        base_y = y_vals[-1]
+        n = 0
+
+        while True:
+            if n == 0:
+                offset = 0.0
+            else:
+                level = (n + 1) // 2
+                sign  = -1 if n % 2 else 1
+                offset = sign * level * delta_y
+
+            candidate_y = base_y + offset
+
+            if all(abs(candidate_y - y_prev) > tolerance for y_prev in placed_label_ys):
+                placed_label_ys.append(candidate_y)
+                break
+
+            n += 1
+
+        ax.text(
+            x_vals[-1] + 0.1,
+            candidate_y,
+            f"Fαw={result['F_alpha']:.2f}",
+            color=line.get_color(),
+            fontsize=12,
+            va="center",
+            ha="left"
+        )
+
+    # --------------------------------------------------
+    # 2) ISO class boundary curves
+    # --------------------------------------------------
+    class_curves = {
+        "Class A": [0.70, 0.90, 0.90, 0.90, 0.80],
+        "Class B": [0.60, 0.80, 0.80, 0.80, 0.70],
+        "Class C": [0.40, 0.60, 0.60, 0.60, 0.50],
+        "Class D": [0.15, 0.30, 0.30, 0.30, 0.20],
+        "Class E": [0.00, 0.15, 0.15, 0.15, 0.05]
+    }
+
+    for curve in class_curves.values():
+        ax.plot(
+            x_positions[1:],
+            curve,
+            linestyle="--",
+            color="gray",
+            linewidth=1.5
+        )
+
+    # --------------------------------------------------
+    # 3) ISO class letters
+    # --------------------------------------------------
+    for class_label, curve in class_curves.items():
+        letter = class_label.split()[1]
+
+        ax.text(
+            x_positions[1] - 0.1,
+            curve[0] + 0.03,
+            letter,
+            color="gray",
+            fontsize=14,
+            fontweight="bold",
+            va="center",
+            ha="right"
+        )
+
+    # --------------------------------------------------
+    # 4) Final styling
+    # --------------------------------------------------
+    ax.set_xticks(x_positions)
+    ax.set_xticklabels(x_labels, fontsize=12)
+
+    ax.set_yticks(np.arange(0, 1.1, 0.2))
+    ax.tick_params(axis="y", labelsize=12)
+
+    ax.set_xlabel("Frequency (Hz)", fontsize=14)
+    ax.set_ylabel("Façade sound absorption coefficients (Fα)", fontsize=14)
+
+    ax.set_xlim(0, 5)
+    ax.set_ylim(0, 1.0)
+
+    ax.grid(which="both", linestyle="-", linewidth=0.5)
+    ax.legend(fontsize=12, loc="upper left")
+
+    fig.tight_layout()
+
+    if show:
+        plt.show()
+
+    return fig
+
+
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: process_script.py <file_path> <file_id>")
@@ -457,10 +716,29 @@ def main():
             print("scatter plot error:", e)
     
     if plot_caps["absorption"]:
+        lookup_df = load_lookup_table()
+        # print(lookup_df.head())
+        lookup_df.set_index("Material", inplace=True)
+        ## Input file data 
+        df_row.set_index("Facade", inplace = True)
+        facade_configs = df_row.to_dict()
+        # print(facade_configs)
+
+        # Octave bands and x-axis positions/labels
+        freqs       = [250, 500, 1000, 2000, 4000]
+        x_labels    = ["125", "250", "500", "1000", "2000", "4000"]
+        x_positions = [0, 1, 2, 3, 4, 5]
+
+        facade_results = compute_facade_absorption_results(
+        facade_configs=df_row,
+        matdf_row=lookup_df,
+        freqs=freqs
+        )
+        
         # ---------- ABSORPTION: ONE PLOT ----------
         try:
-            fig = scene_distrib_plot(df_row, TITLE_DS)
-            f3 = f"{file_id}_distribution.png"
+            fig = plot_facade_absorption(facade_results=facade_results,x_positions=x_positions,x_labels=x_labels)
+            f3 = f"{file_id}_absorption.png"
             fig.savefig(RESULT_DIR / f3, bbox_inches="tight", dpi=200)
             plt.close(fig)
             plots.append(f3)
