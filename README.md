@@ -11,7 +11,7 @@ Digital Toolbox - https://digital-tool-box-ui.onrender.com/
 
 ### Technologies and Tools Used
 
-Programming Language	- Python
+Programming Language	- Python//
 Backend Framework	- FastAPI
 API Development	- RESTful API Services
 Data Processing	- Pandas, NumPy
