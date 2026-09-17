@@ -11,7 +11,7 @@ Digital Toolbox - https://digital-tool-box-ui.onrender.com/
 
 ### Technologies and Tools Used
 
-Programming Language	- Python//
+Programming Language	- Python
 Backend Framework	- FastAPI
 API Development	- RESTful API Services
 Data Processing	- Pandas, NumPy
@@ -28,5 +28,9 @@ Version Control - GitHub
 Deployment Platform	- Render Cloud Platform
 Data Storage - Local File System, Metadata based History Management
 
-### Features	Multi file upload, toggle function for data connectors, dataset preview, automated plot generation, session history, standardized soundscape analysis pipeline
+### Features	
+Multi file upload 
+Toggle function for data connectors
+Dataset preview
+Automated plot generation  Session history Standardized Soundscape analysis pipeline
 
